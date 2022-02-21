@@ -1,7 +1,7 @@
 import Pie from "paths-js/pie";
 import React from "react";
 import { View, ViewStyle } from "react-native";
-import { G, Path, Rect, Svg, Text } from "react-native-svg";
+import { Circle, Defs, G, LinearGradient, Path, Rect, Stop, Svg, Text } from "react-native-svg";
 
 import AbstractChart, {
   AbstractChartConfig,
@@ -88,6 +88,7 @@ class ProgressChart extends AbstractChart<
         }
       });
     });
+    console.log({pieBackgrounds})
 
     const withLabel = (i: number) =>
       (data as any).labels && (data as any).labels[i];
@@ -185,7 +186,7 @@ class ProgressChart extends AbstractChart<
                   <Path
                     key={Math.random()}
                     d={pie.curves[0].sector.path.print()}
-                    strokeWidth={strokeWidth}
+                    strokeWidth={1}
                     stroke={this.props.chartConfig.color(0.2, i)}
                   />
                 );
@@ -193,7 +194,11 @@ class ProgressChart extends AbstractChart<
             </G>
             <G>
               {pies.map((pie, i) => {
+                const points  = pie.curves[0].sector.path.points();
+                const point = points[0]
+                const grad = "grad"+ i
                 return (
+                  <>  
                   <Path
                     key={Math.random()}
                     strokeLinecap="round"
@@ -208,7 +213,17 @@ class ProgressChart extends AbstractChart<
                             i
                           )
                     }
+                    
                   />
+                  <Circle  stroke={
+                      this.props.withCustomBarColorFromData
+                        ? withColor(i)
+                        : this.props.chartConfig.color(
+                            (i / pies.length) * 0.5 + 0.5,
+                            i
+                          )
+                    } strokeWidth="1" cx={point[0]} cy={point[1]} r="6" fill={'#fff'} />
+                  </>
                 );
               })}
             </G>
