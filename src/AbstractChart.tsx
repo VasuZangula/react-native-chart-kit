@@ -44,7 +44,9 @@ class AbstractChart<
 > extends Component<AbstractChartProps & IProps, AbstractChartState & IState> {
   calcScaler = (data: number[]) => {
     if (this.props.fromZero && this.props.fromNumber) {
-      return Math.max(...data, this.props.fromNumber) - Math.min(...data, 0) || 1;
+      return (
+        Math.max(...data, this.props.fromNumber) - Math.min(...data, 0) || 1
+      );
     } else if (this.props.fromZero) {
       return Math.max(...data, 0) - Math.min(...data, 0) || 1;
     } else if (this.props.fromNumber) {
@@ -59,26 +61,26 @@ class AbstractChart<
 
   calcBaseHeight = (data: number[], height: number) => {
     const min = Math.min(...data);
-    const max = Math.max(...data);
+    const max = Math.ceil(this.calcScaler(data) / 4) * 4 + Math.min(...data);
     if (min >= 0 && max >= 0) {
       return height;
     } else if (min < 0 && max <= 0) {
       return 0;
     } else if (min < 0 && max > 0) {
-      return (height * max) / this.calcScaler(data);
+      return (height * max) / max;
     }
   };
 
   calcHeight = (val: number, data: number[], height: number) => {
-    const max = Math.max(...data);
     const min = Math.min(...data);
+    const max = Math.ceil(this.calcScaler(data) / 4) * 4 + Math.min(...data);
 
     if (min < 0 && max > 0) {
       return height * (val / this.calcScaler(data));
     } else if (min >= 0 && max >= 0) {
       return this.props.fromZero
         ? height * (val / this.calcScaler(data))
-        : height * ((val - min) / this.calcScaler(data));
+        : height * ((val - min) / (max == 0 ? this.calcScaler(data) : max));
     } else if (min < 0 && max <= 0) {
       return this.props.fromZero
         ? height * (val / this.calcScaler(data))
@@ -208,8 +210,8 @@ class AbstractChart<
         )}${yAxisSuffix}`;
       } else {
         const label = this.props.fromZero
-          ? (this.calcScaler(data) / count) * i + Math.min(...data, 0)
-          : (this.calcScaler(data) / count) * i + Math.min(...data);
+          ? Math.ceil(this.calcScaler(data) / count) * i + Math.min(...data, 0)
+          : Math.ceil(this.calcScaler(data) / count) * i + Math.min(...data);
         yLabel = `${yAxisLabel}${formatYLabel(
           label.toFixed(decimalPlaces)
         )}${yAxisSuffix}`;
